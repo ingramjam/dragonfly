@@ -38,7 +38,6 @@ class SpotifyService {
     // If you need to use the client secret during development, pass it here
     // from a secure source (not committed). Prefer PKCE/native flows which
     // avoid including a client secret in the client binary.
-    final clientSecret = secret ?? clientSecretFromDefine;
 
     // TODO: call spotify_sdk authorize methods per platform. Example (pseudo):
     // await SpotifySdk.connectToSpotifyRemote(clientId: clientId, redirectUrl: redirectUrl);

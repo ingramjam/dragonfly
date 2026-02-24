@@ -30,7 +30,9 @@ class _SpotifySettingsPageState extends State<SpotifySettingsPage> {
     final url = SpotifyImpl.buildAuthorizeUrl(redirectUri: redirect, codeChallenge: challenge);
     setState(() => _lastUrl = url);
     final uri = Uri.parse(url);
+    if (!mounted) return;
     if (!await canLaunchUrl(uri)) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cannot open browser on this platform')));
       return;
     }
