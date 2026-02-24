@@ -1,8 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+import 'package:flutter/foundation.dart';
 import 'dart:async';
 
-final bleProvider = Provider((ref) => FlutterReactiveBle());
+final bleProvider = Provider<FlutterReactiveBle?>((ref) {
+  if (kIsWeb) return null;
+  return FlutterReactiveBle();
+});
 
 final bluetoothServiceProvider = StateNotifierProvider<BluetoothService, BluetoothState>((ref) {
   return BluetoothService(ref.watch(bleProvider));
@@ -34,7 +38,7 @@ class BluetoothState {
 
 // Manages Bluetooth Low Energy (BLE) scanning and connections.
 class BluetoothService extends StateNotifier<BluetoothState> {
-  final FlutterReactiveBle _ble;
+  final FlutterReactiveBle? _ble;
   StreamSubscription? _scanSubscription;
   StreamSubscription<ConnectionStateUpdate>? _connectionSubscription;
 
@@ -42,9 +46,13 @@ class BluetoothService extends StateNotifier<BluetoothState> {
 
   // Starts scanning for nearby BLE devices.
   void startScan() {
+    if (_ble == null) {
+      debugPrint('Bluetooth scanning not supported on this platform');
+      return;
+    }
     state = state.copyWith(isScanning: true, discoveredDevices: []);
     _scanSubscription?.cancel();
-    _scanSubscription = _ble.scanForDevices(withServices: []).listen((device) {
+    _scanSubscription = _ble!.scanForDevices(withServices: []).listen((device) {
       final knownDevices = state.discoveredDevices;
       final deviceIndex = knownDevices.indexWhere((d) => d.id == device.id);
       if (deviceIndex != -1) {
@@ -64,10 +72,14 @@ class BluetoothService extends StateNotifier<BluetoothState> {
   }
 
   // Connects to a specific BLE device.
-  void connect(DiscoveredDevice device) {
+  void connect(DiscoveredDevice device) async {
     stopScan();
+    if (_ble == null) {
+      debugPrint('Bluetooth connection not supported on this platform');
+      return;
+    }
     _connectionSubscription?.cancel();
-    _connectionSubscription = _ble.connectToDevice(id: device.id).listen((connectionState) {
+    _connectionSubscription = _ble!.connectToDevice(id: device.id).listen((connectionState) {
       if (connectionState.connectionState == DeviceConnectionState.connected) {
         state = state.copyWith(connectedDevice: device);
       }

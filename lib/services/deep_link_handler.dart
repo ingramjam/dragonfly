@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:flutter/foundation.dart';
 import 'dart:async';
 
 import 'package:dragonfly/features/spotify/spotify_auth.dart';
@@ -31,27 +32,41 @@ class _DeepLinkHandlerState extends ConsumerState<DeepLinkHandler> {
   }
 
   Future<void> _initUniLinks() async {
+    if (kIsWeb) return;
+    
+    // Check initial link
+    try {
+      final initialLink = await getInitialLink();
+      if (initialLink != null) {
+        _handleLink(initialLink);
+      }
+    } catch (e) {
+      debugPrint('Error getting initial link: $e');
+    }
+
+    // Listen to link stream
     _sub = linkStream.listen((String? link) {
       if (link != null) {
-        final uri = Uri.parse(link);
-        // Handles Spotify auth callback
-        if (uri.host == 'callback' && uri.queryParameters.containsKey('code')) {
-          ref.read(spotifyAuthProvider.notifier).exchangeCodeForToken(uri.queryParameters['code']!);
-        }
-        // Handle join links
-        if (uri.host == 'join' && uri.pathSegments.isNotEmpty) {
-          final sessionId = uri.pathSegments.first;
-          final sessionManager = SessionManager(ref.read(firebaseDatabaseProvider), ref.read(uuidProvider).v4());
-          sessionManager.joinSession(sessionId);
-          // Here you would navigate to a session page
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Joining session: $sessionId')));
-          }
-        }
+        _handleLink(link);
       }
     }, onError: (err) {
-      // Handle exception by warning the user their action did not succeed
+      debugPrint('Deep link error: $err');
     });
+  }
+
+  void _handleLink(String link) {
+    debugPrint('Received deep link: $link');
+    final uri = Uri.parse(link);
+    // Handles Spotify auth callback
+    if (uri.host == 'callback' && uri.queryParameters.containsKey('code')) {
+      ref.read(spotifyAuthProvider.notifier).exchangeCodeForToken(uri.queryParameters['code']!);
+    }
+    // Handle join links
+    else if (uri.host == 'join' && uri.pathSegments.isNotEmpty) {
+      // Placeholder for joining logic
+      final sessionId = uri.pathSegments.last;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Joining session: $sessionId')));
+    }
   }
 
   @override

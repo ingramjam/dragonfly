@@ -45,25 +45,43 @@ class _SpotifySettingsPageState extends State<SpotifySettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Spotify Settings')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          const Text('Client ID (public):', style: TextStyle(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 6),
-          SelectableText(SpotifyImpl.clientId),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _redirectController,
-            decoration: const InputDecoration(labelText: 'Redirect URI'),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text('PKCE Configuration', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              
+              const Text('Client ID (public):', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey)),
+              const SizedBox(height: 6),
+              SelectableText(SpotifyImpl.clientId, style: const TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 24),
+              
+              TextField(
+                controller: _redirectController,
+                decoration: const InputDecoration(labelText: 'Redirect URI (Must match Spotify Dashboard)'),
+              ),
+              const SizedBox(height: 24),
+              
+              const Text('This screen is for debugging the raw PKCE flow manually.', style: TextStyle(color: Colors.grey, fontSize: 12)),
+              const SizedBox(height: 24),
+              
+              ElevatedButton.icon(
+                onPressed: _openAuth,
+                icon: const Icon(Icons.open_in_new),
+                label: const Text('Connect to Spotify (open browser)'),
+              ),
+              if (_lastUrl != null) ...[
+                const SizedBox(height: 24),
+                const Text('Auth URL (for debug):', style: TextStyle(fontWeight: FontWeight.w600)),
+                const SizedBox(height: 8),
+                SelectableText(_lastUrl!, style: const TextStyle(fontSize: 10, fontFamily: 'Courier', color: Colors.grey)),
+              ]
+            ],
           ),
-          const SizedBox(height: 12),
-          ElevatedButton(onPressed: _openAuth, child: const Text('Connect to Spotify (open browser)')),
-          const SizedBox(height: 12),
-          if (_lastUrl != null) ...[
-            const Text('Auth URL (for debug):', style: TextStyle(fontWeight: FontWeight.w600)),
-            SelectableText(_lastUrl!),
-          ]
-        ]),
+        ),
       ),
     );
   }
