@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'features/spotify/spotify_settings.dart';
 
 void main() {
   runApp(const DragonFlyDemoApp());
@@ -18,6 +19,7 @@ class DragonFlyDemoApp extends StatelessWidget {
       routes: {
         '/': (_) => const HomePage(),
         '/demo': (_) => const DemoPage(),
+        '/spotify': (_) => const SpotifySettingsPage(),
       },
     );
   }
@@ -73,6 +75,12 @@ class _HomePageState extends State<HomePage> {
                     icon: const Icon(Icons.qr_code),
                     label: const Text('Open Demo (web)'),
                     onPressed: () => Navigator.of(context).pushNamed('/demo'),
+                  ),
+                  const SizedBox(height: 8),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.music_note),
+                    label: const Text('Spotify Settings'),
+                    onPressed: () => Navigator.of(context).pushNamed('/spotify'),
                   ),
                 ]),
               ),
